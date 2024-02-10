@@ -1,9 +1,12 @@
+import * as THREE from 'three';
 /**
  * @author dmarcos / https://github.com/dmarcos
  * @author mrdoob / http://mrdoob.com
  */
-
-THREE.VRControls = function ( object, onError ) {
+/**
+ * VRControls applies the WebVR transformations to a three.js camera object.
+ */
+function VRControls(object, onError) {
 
 	var scope = this;
 
@@ -147,3 +150,4 @@ THREE.VRControls = function ( object, onError ) {
 	};
 
 };
+export {VRControls};

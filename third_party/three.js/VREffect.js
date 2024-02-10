@@ -1,6 +1,9 @@
+import * as THREE from 'three';
 /**
  * @author dmarcos / https://github.com/dmarcos
  * @author mrdoob / http://mrdoob.com
+ *
+ * VREffect handles stereo camera setup and rendering.
  *
  * WebVR Spec: http://mozvr.github.io/webvr-spec/webvr.html
  *
@@ -8,8 +11,7 @@
  * Chromium: https://webvr.info/get-chrome
  */
 
-THREE.VREffect = function ( renderer, onError ) {
-
+function VREffect(renderer, onError) {
 	var vrDisplay, vrDisplays;
 	var eyeTranslationL = new THREE.Vector3();
 	var eyeTranslationR = new THREE.Vector3();
@@ -515,6 +517,14 @@ THREE.VREffect = function ( renderer, onError ) {
 
 	}
 
+	/**
+	 * 
+	 * @param {*} fov 
+	 * @param {*} rightHanded 
+	 * @param {*} zNear 
+	 * @param {*} zFar 
+	 * @returns 
+	 */
 	function fovToProjection( fov, rightHanded, zNear, zFar ) {
 
 		var DEG2RAD = Math.PI / 180.0;
@@ -531,3 +541,4 @@ THREE.VREffect = function ( renderer, onError ) {
 	}
 
 };
+export {VREffect};
