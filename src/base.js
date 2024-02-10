@@ -12,19 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as Util from './util.js';
 import NoSleep from 'nosleep.js/dist/NoSleep.js';
-
 // Start at a higher number to reduce chance of conflict.
 var nextDisplayId = 1000;
-
 var defaultLeftBounds = [0, 0, 0.5, 1];
 var defaultRightBounds = [0.5, 0, 0.5, 1];
-
 var raf = window.requestAnimationFrame;
 var caf = window.cancelAnimationFrame;
-
 /**
  * @typedef {object} FieldOfView
  * @property {number} downDegrees
@@ -32,11 +27,9 @@ var caf = window.cancelAnimationFrame;
  * @property {number} rightDegrees
  * @property {number} upDegrees
  */
-
 /**
  * The base class for all VR frame data.
  */
-
 export function VRFrameData() {
   this.leftProjectionMatrix = new Float32Array(16);
   this.leftViewMatrix = new Float32Array(16);
@@ -44,7 +37,6 @@ export function VRFrameData() {
   this.rightViewMatrix = new Float32Array(16);
   this.pose = null;
 };
-
 export function VRDisplayCapabilities (config) {
   Object.defineProperties(this, {
     hasPosition: {
@@ -68,23 +60,18 @@ export function VRDisplayCapabilities (config) {
     },
   });
 }
-
 /**
  * The base class for all VR displays.
  */
 export function VRDisplay(config) {
   config = config || {};
   var USE_WAKELOCK = 'wakelock' in config ? config.wakelock : true;
-
   this.isPolyfilled = true;
   this.displayId = nextDisplayId++;
   this.displayName = '';
-
   this.depthNear = 0.01;
   this.depthFar = 10000.0;
-
   this.isPresenting = false;
-
   Object.defineProperty(this, 'isConnected', {
     get: function() {
       Util.deprecateWarning('VRDisplay.prototype.isConnected',
@@ -92,7 +79,6 @@ export function VRDisplay(config) {
       return false;
     },
   });
-
   this.capabilities = new VRDisplayCapabilities({
     hasPosition: false,
     hasOrientation: false,
@@ -100,9 +86,7 @@ export function VRDisplay(config) {
     canPresent: false,
     maxLayers: 1
   });
-
   this.stageParameters = null;
-
   // "Private" members.
   this.waitingForPresent_ = false;
   this.layer_ = null;
@@ -113,28 +97,23 @@ export function VRDisplay(config) {
   // changes during presentation (in which case we need something to track
   // the newer `source`'s parent when we clean up).
   this.originalParent_ = null;
-
   this.fullscreenElement_ = null;
   this.fullscreenWrapper_ = null;
   this.fullscreenElementCachedStyle_ = null;
-
   this.fullscreenEventTarget_ = null;
   this.fullscreenChangeHandler_ = null;
   this.fullscreenErrorHandler_ = null;
-
   // Get an appropriate wakelock for Android or iOS if MOBILE_WAKE_LOCK
   // is true.
   if (USE_WAKELOCK && Util.isMobile()) {
     this.wakelock_ = new NoSleep();
   }
 }
-
 VRDisplay.prototype.getFrameData = function(frameData) {
   // TODO: Technically this should retain it's value for the duration of a frame
   // but I doubt that's practical to do in javascript.
   return Util.frameDataFromPose(frameData, this._getPose(), this);
 };
-
 VRDisplay.prototype.getPose = function() {
   // TODO: Technically this should retain it's value for the duration of a frame
   // but I doubt that's practical to do in javascript.
@@ -142,12 +121,10 @@ VRDisplay.prototype.getPose = function() {
                         'VRDisplay.prototype.getFrameData');
   return this._getPose();
 };
-
 VRDisplay.prototype.resetPose = function() {
   Util.deprecateWarning('VRDisplay.prototype.resetPose');
   return this._resetPose();
 };
-
 VRDisplay.prototype.getImmediatePose = function() {
   // TODO: Technically this should retain it's value for the duration of a frame
   // but I doubt that's practical to do in javascript.
@@ -155,15 +132,12 @@ VRDisplay.prototype.getImmediatePose = function() {
                         'VRDisplay.prototype.getFrameData');
   return this._getPose();
 };
-
 VRDisplay.prototype.requestAnimationFrame = function(callback) {
   return raf(callback);
 };
-
 VRDisplay.prototype.cancelAnimationFrame = function(id) {
   return caf(id);
 };
-
 VRDisplay.prototype.wrapForFullscreen = function(element) {
   // Don't wrap in iOS.
   if (Util.isIOS()) {
@@ -185,11 +159,9 @@ VRDisplay.prototype.wrapForFullscreen = function(element) {
     this.fullscreenWrapper_.setAttribute('style', cssProperties.join('; ') + ';');
     this.fullscreenWrapper_.classList.add('webvr-polyfill-fullscreen-wrapper');
   }
-
   if (this.fullscreenElement_ == element) {
     return this.fullscreenWrapper_;
   }
-
   // If fullscreenElement_ already exists, swap it out with the new element.
   // This is necessary for changing the layer's `source` context, beyond just
   // changing the bounds. This is used in the WebXRPolyfill, which calls requestPresent
@@ -204,14 +176,12 @@ VRDisplay.prototype.wrapForFullscreen = function(element) {
       this.fullscreenElement_.parentElement.removeChild(this.fullscreenElement_);
     }
   }
-
   this.fullscreenElement_ = element;
   this.originalParent_ = element.parentElement;
   // We may have to inject the canvas in the DOM
   if (!this.originalParent_) {
     document.body.appendChild(element);
   }
-
   // If the fullscreenWrapper is already in the DOM, don't move it. Otherwise,
   // make it a child of `element`'s parent.
   if (!this.fullscreenWrapper_.parentElement) {
@@ -219,16 +189,13 @@ VRDisplay.prototype.wrapForFullscreen = function(element) {
     parent.insertBefore(this.fullscreenWrapper_, this.fullscreenElement_);
     parent.removeChild(this.fullscreenElement_);
   }
-
   this.fullscreenWrapper_.insertBefore(this.fullscreenElement_, this.fullscreenWrapper_.firstChild);
   this.fullscreenElementCachedStyle_ = this.fullscreenElement_.getAttribute('style');
-
   var self = this;
   function applyFullscreenElementStyle() {
     if (!self.fullscreenElement_) {
       return;
     }
-
     var cssProperties = [
       'position: absolute',
       'top: 0',
@@ -241,30 +208,23 @@ VRDisplay.prototype.wrapForFullscreen = function(element) {
     ];
     self.fullscreenElement_.setAttribute('style', cssProperties.join('; ') + ';');
   }
-
   applyFullscreenElementStyle();
-
   return this.fullscreenWrapper_;
 };
-
 VRDisplay.prototype.removeFullscreenWrapper = function() {
   if (!this.fullscreenElement_) {
     return;
   }
-
   var element = this.fullscreenElement_;
   if (this.fullscreenElementCachedStyle_) {
     element.setAttribute('style', this.fullscreenElementCachedStyle_);
   } else {
     element.removeAttribute('style');
   }
-
   this.fullscreenElement_ = null;
   this.fullscreenElementCachedStyle_ = null;
-
   var parent = this.fullscreenWrapper_.parentElement;
   this.fullscreenWrapper_.removeChild(element);
-
   if (this.originalParent_ === parent) {
     parent.insertBefore(element, this.fullscreenWrapper_);
   }
@@ -274,33 +234,26 @@ VRDisplay.prototype.removeFullscreenWrapper = function() {
   else if (this.originalParent_) {
     this.originalParent_.appendChild(element);
   }
-
   parent.removeChild(this.fullscreenWrapper_);
-
   return element;
 };
-
 VRDisplay.prototype.requestPresent = function(layers) {
   var wasPresenting = this.isPresenting;
   var self = this;
-
   if (!(layers instanceof Array)) {
     Util.deprecateWarning('VRDisplay.prototype.requestPresent with non-array argument',
                           'an array of VRLayers as the first argument');
     layers = [layers];
   }
-
   return new Promise(function(resolve, reject) {
     if (!self.capabilities.canPresent) {
       reject(new Error('VRDisplay is not capable of presenting.'));
       return;
     }
-
     if (layers.length == 0 || layers.length > self.capabilities.maxLayers) {
       reject(new Error('Invalid number of layers.'));
       return;
     }
-
     var incomingLayer = layers[0];
     if (!incomingLayer.source) {
       /*
@@ -310,7 +263,6 @@ VRDisplay.prototype.requestPresent = function(layers) {
       resolve();
       return;
     }
-
     var leftBounds = incomingLayer.leftBounds || defaultLeftBounds;
     var rightBounds = incomingLayer.rightBounds || defaultRightBounds;
     if (wasPresenting) {
@@ -319,19 +271,16 @@ VRDisplay.prototype.requestPresent = function(layers) {
       if (layer.source !== incomingLayer.source) {
         layer.source = incomingLayer.source;
       }
-
       for (var i = 0; i < 4; i++) {
         layer.leftBounds[i] = leftBounds[i];
         layer.rightBounds[i] = rightBounds[i];
       }
-
       // Call another wrap to swap out canvases in the fullscreen wrapper.
       self.wrapForFullscreen(self.layer_.source);
       self.updatePresent_();
       resolve();
       return;
     }
-
     // Was not already presenting.
     self.layer_ = {
       predistorted: incomingLayer.predistorted,
@@ -339,15 +288,11 @@ VRDisplay.prototype.requestPresent = function(layers) {
       leftBounds: leftBounds.slice(0),
       rightBounds: rightBounds.slice(0)
     };
-
     self.waitingForPresent_ = false;
     if (self.layer_ && self.layer_.source) {
-
       var fullscreenElement = self.wrapForFullscreen(self.layer_.source);
-
       var onFullscreenChange = function() {
         var actualFullscreenElement = Util.getFullscreenElement();
-
         self.isPresenting = (fullscreenElement === actualFullscreenElement);
         if (self.isPresenting) {
           if (screen.orientation && screen.orientation.lock) {
@@ -373,20 +318,15 @@ VRDisplay.prototype.requestPresent = function(layers) {
         if (!self.waitingForPresent_) {
           return;
         }
-
         self.removeFullscreenWrapper();
         self.removeFullscreenListeners_();
-
         self.disableWakeLock();
         self.waitingForPresent_ = false;
         self.isPresenting = false;
-
         reject(new Error('Unable to present.'));
       }
-
       self.addFullscreenListeners_(fullscreenElement,
           onFullscreenChange, onFullscreenError);
-
       if (Util.requestFullscreen(fullscreenElement)) {
         self.enableWakeLock();
         self.waitingForPresent_ = true;
@@ -399,49 +339,42 @@ VRDisplay.prototype.requestPresent = function(layers) {
         resolve();
       }
     }
-
     if (!self.waitingForPresent_ && !Util.isIOS()) {
       Util.exitFullscreen();
       reject(new Error('Unable to present.'));
     }
   });
 };
-
 VRDisplay.prototype.exitPresent = function() {
   var wasPresenting = this.isPresenting;
   var self = this;
   this.isPresenting = false;
   this.layer_ = null;
   this.disableWakeLock();
-
   return new Promise(function(resolve, reject) {
     if (wasPresenting) {
       if (!Util.exitFullscreen() && Util.isIOS()) {
         self.endPresent_();
         self.fireVRDisplayPresentChange_();
       }
-
       if (Util.isWebViewAndroid()) {
         self.removeFullscreenWrapper();
         self.removeFullscreenListeners_();
         self.endPresent_();
         self.fireVRDisplayPresentChange_();
       }
-
       resolve();
     } else {
       reject(new Error('Was not presenting to VRDisplay.'));
     }
   });
 };
-
 VRDisplay.prototype.getLayers = function() {
   if (this.layer_) {
     return [this.layer_];
   }
   return [];
 };
-
 VRDisplay.prototype.fireVRDisplayPresentChange_ = function() {
   // Important: unfortunately we cannot have full spec compliance here.
   // CustomEvent custom fields all go under e.detail (so the VRDisplay ends up
@@ -449,7 +382,6 @@ VRDisplay.prototype.fireVRDisplayPresentChange_ = function() {
   var event = new CustomEvent('vrdisplaypresentchange', {detail: {display: this}});
   window.dispatchEvent(event);
 };
-
 VRDisplay.prototype.fireVRDisplayConnect_ = function() {
   // Important: unfortunately we cannot have full spec compliance here.
   // CustomEvent custom fields all go under e.detail (so the VRDisplay ends up
@@ -457,14 +389,11 @@ VRDisplay.prototype.fireVRDisplayConnect_ = function() {
   var event = new CustomEvent('vrdisplayconnect', {detail: {display: this}});
   window.dispatchEvent(event);
 };
-
 VRDisplay.prototype.addFullscreenListeners_ = function(element, changeHandler, errorHandler) {
   this.removeFullscreenListeners_();
-
   this.fullscreenEventTarget_ = element;
   this.fullscreenChangeHandler_ = changeHandler;
   this.fullscreenErrorHandler_ = errorHandler;
-
   if (changeHandler) {
     if (document.fullscreenEnabled) {
       element.addEventListener('fullscreenchange', changeHandler, false);
@@ -476,7 +405,6 @@ VRDisplay.prototype.addFullscreenListeners_ = function(element, changeHandler, e
       element.addEventListener('msfullscreenchange', changeHandler, false);
     }
   }
-
   if (errorHandler) {
     if (document.fullscreenEnabled) {
       element.addEventListener('fullscreenerror', errorHandler, false);
@@ -489,13 +417,10 @@ VRDisplay.prototype.addFullscreenListeners_ = function(element, changeHandler, e
     }
   }
 };
-
 VRDisplay.prototype.removeFullscreenListeners_ = function() {
   if (!this.fullscreenEventTarget_)
     return;
-
   var element = this.fullscreenEventTarget_;
-
   if (this.fullscreenChangeHandler_) {
     var changeHandler = this.fullscreenChangeHandler_;
     element.removeEventListener('fullscreenchange', changeHandler, false);
@@ -503,7 +428,6 @@ VRDisplay.prototype.removeFullscreenListeners_ = function() {
     document.removeEventListener('mozfullscreenchange', changeHandler, false);
     element.removeEventListener('msfullscreenchange', changeHandler, false);
   }
-
   if (this.fullscreenErrorHandler_) {
     var errorHandler = this.fullscreenErrorHandler_;
     element.removeEventListener('fullscreenerror', errorHandler, false);
@@ -511,36 +435,29 @@ VRDisplay.prototype.removeFullscreenListeners_ = function() {
     document.removeEventListener('mozfullscreenerror', errorHandler, false);
     element.removeEventListener('msfullscreenerror', errorHandler, false);
   }
-
   this.fullscreenEventTarget_ = null;
   this.fullscreenChangeHandler_ = null;
   this.fullscreenErrorHandler_ = null;
 };
-
 VRDisplay.prototype.enableWakeLock = function() {
   if (this.wakelock_) {
     this.wakelock_.enable();
   }
 }
-
 VRDisplay.prototype.disableWakeLock = function() {
   if (this.wakelock_) {
     this.wakelock_.disable();
   }
 }
-
 VRDisplay.prototype.beginPresent_ = function() {
   // Override to add custom behavior when presentation begins.
 };
-
 VRDisplay.prototype.endPresent_ = function() {
   // Override to add custom behavior when presentation ends.
 };
-
 VRDisplay.prototype.submitFrame = function(pose) {
   // Override to add custom behavior for frame submission.
 };
-
 VRDisplay.prototype.getEyeParameters = function(whichEye) {
   // Override to return accurate eye parameters if canPresent is true.
   return null;

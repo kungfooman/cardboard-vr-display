@@ -12,36 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as Util from './util.js';
 import WGLUPreserveGLState from 'gl-preserve-state';
-
 var distortionVS = [
   'attribute vec2 position;',
   'attribute vec3 texCoord;',
-
   'varying vec2 vTexCoord;',
-
   'uniform vec4 viewportOffsetScale[2];',
-
   'void main() {',
   '  vec4 viewport = viewportOffsetScale[int(texCoord.z)];',
   '  vTexCoord = (texCoord.xy * viewport.zw) + viewport.xy;',
   '  gl_Position = vec4( position, 1.0, 1.0 );',
   '}',
 ].join('\n');
-
 var distortionFS = [
   'precision mediump float;',
   'uniform sampler2D diffuse;',
-
   'varying vec2 vTexCoord;',
-
   'void main() {',
   '  gl_FragColor = texture2D(diffuse, vTexCoord);',
   '}',
 ].join('\n');
-
 /**
  * A mesh-based distorter.
  *
@@ -57,13 +48,10 @@ function CardboardDistorter(gl, cardboardUI, bufferScale, dirtySubmitFrameBindin
   this.dirtySubmitFrameBindings = dirtySubmitFrameBindings;
   this.ctxAttribs = gl.getContextAttributes();
   this.instanceExt = gl.getExtension('ANGLE_instanced_arrays');
-
   this.meshWidth = 20;
   this.meshHeight = 20;
-
   this.bufferWidth = gl.drawingBufferWidth;
   this.bufferHeight = gl.drawingBufferHeight;
-
   // Patching support
   this.realBindFramebuffer = gl.bindFramebuffer;
   this.realEnable = gl.enable;
@@ -71,14 +59,11 @@ function CardboardDistorter(gl, cardboardUI, bufferScale, dirtySubmitFrameBindin
   this.realColorMask = gl.colorMask;
   this.realClearColor = gl.clearColor;
   this.realViewport = gl.viewport;
-
   if (!Util.isIOS()) {
     this.realCanvasWidth = Object.getOwnPropertyDescriptor(gl.canvas.__proto__, 'width');
     this.realCanvasHeight = Object.getOwnPropertyDescriptor(gl.canvas.__proto__, 'height');
   }
-
   this.isPatched = false;
-
   // State tracking
   this.lastBoundFramebuffer = null;
   this.cullFace = false;
@@ -89,28 +74,22 @@ function CardboardDistorter(gl, cardboardUI, bufferScale, dirtySubmitFrameBindin
   this.viewport = [0, 0, 0, 0];
   this.colorMask = [true, true, true, true];
   this.clearColor = [0, 0, 0, 0];
-
   this.attribs = {
     position: 0,
     texCoord: 1
   };
   this.program = Util.linkProgram(gl, distortionVS, distortionFS, this.attribs);
   this.uniforms = Util.getProgramUniforms(gl, this.program);
-
   this.viewportOffsetScale = new Float32Array(8);
   this.setTextureBounds();
-
   this.vertexBuffer = gl.createBuffer();
   this.indexBuffer = gl.createBuffer();
   this.indexCount = 0;
-
   this.renderTarget = gl.createTexture();
   this.framebuffer = gl.createFramebuffer();
-
   this.depthStencilBuffer = null;
   this.depthBuffer = null;
   this.stencilBuffer = null;
-
   if (this.ctxAttribs.depth && this.ctxAttribs.stencil) {
     this.depthStencilBuffer = gl.createRenderbuffer();
   } else if (this.ctxAttribs.depth) {
@@ -118,21 +97,16 @@ function CardboardDistorter(gl, cardboardUI, bufferScale, dirtySubmitFrameBindin
   } else if (this.ctxAttribs.stencil) {
     this.stencilBuffer = gl.createRenderbuffer();
   }
-
   this.patch();
-
   this.onResize();
 };
-
 /**
  * Tears down all the resources created by the distorter and removes any
  * patches.
  */
 CardboardDistorter.prototype.destroy = function() {
   var gl = this.gl;
-
   this.unpatch();
-
   gl.deleteProgram(this.program);
   gl.deleteBuffer(this.vertexBuffer);
   gl.deleteBuffer(this.indexBuffer);
@@ -147,41 +121,32 @@ CardboardDistorter.prototype.destroy = function() {
   if (this.stencilBuffer) {
     gl.deleteRenderbuffer(this.stencilBuffer);
   }
-
   if (this.cardboardUI) {
     this.cardboardUI.destroy();
   }
 };
-
-
 /**
  * Resizes the backbuffer to match the canvas width and height.
  */
 CardboardDistorter.prototype.onResize = function() {
   var gl = this.gl;
   var self = this;
-
   var glState = [
     gl.RENDERBUFFER_BINDING,
     gl.TEXTURE_BINDING_2D, gl.TEXTURE0
   ];
-
   WGLUPreserveGLState(gl, glState, function(gl) {
     // Bind real backbuffer and clear it once. We don't need to clear it again
     // after that because we're overwriting the same area every frame.
     self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, null);
-
     // Put things in a good state
     if (self.scissorTest) { self.realDisable.call(gl, gl.SCISSOR_TEST); }
     self.realColorMask.call(gl, true, true, true, true);
     self.realViewport.call(gl, 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     self.realClearColor.call(gl, 0, 0, 0, 1);
-
     gl.clear(gl.COLOR_BUFFER_BIT);
-
     // Now bind and resize the fake backbuffer
     self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, self.framebuffer);
-
     gl.bindTexture(gl.TEXTURE_2D, self.renderTarget);
     gl.texImage2D(gl.TEXTURE_2D, 0, self.ctxAttribs.alpha ? gl.RGBA : gl.RGB,
         self.bufferWidth, self.bufferHeight, 0,
@@ -191,7 +156,6 @@ CardboardDistorter.prototype.onResize = function() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, self.renderTarget, 0);
-
     if (self.ctxAttribs.depth && self.ctxAttribs.stencil) {
       gl.bindRenderbuffer(gl.RENDERBUFFER, self.depthStencilBuffer);
       gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL,
@@ -211,38 +175,29 @@ CardboardDistorter.prototype.onResize = function() {
       gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT,
           gl.RENDERBUFFER, self.stencilBuffer);
     }
-
     if (!gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE) {
       console.error('Framebuffer incomplete!');
     }
-
     self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, self.lastBoundFramebuffer);
-
     if (self.scissorTest) { self.realEnable.call(gl, gl.SCISSOR_TEST); }
-
     self.realColorMask.apply(gl, self.colorMask);
     self.realViewport.apply(gl, self.viewport);
     self.realClearColor.apply(gl, self.clearColor);
   });
-
   if (this.cardboardUI) {
     this.cardboardUI.onResize();
   }
 };
-
 CardboardDistorter.prototype.patch = function() {
   if (this.isPatched) {
     return;
   }
-
   var self = this;
   var canvas = this.gl.canvas;
   var gl = this.gl;
-
   if (!Util.isIOS()) {
     canvas.width = Util.getScreenWidth() * this.bufferScale;
     canvas.height = Util.getScreenHeight() * this.bufferScale;
-
     Object.defineProperty(canvas, 'width', {
       configurable: true,
       enumerable: true,
@@ -255,7 +210,6 @@ CardboardDistorter.prototype.patch = function() {
         self.onResize();
       }
     });
-
     Object.defineProperty(canvas, 'height', {
       configurable: true,
       enumerable: true,
@@ -269,26 +223,21 @@ CardboardDistorter.prototype.patch = function() {
       }
     });
   }
-
   this.lastBoundFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
-
   if (this.lastBoundFramebuffer == null) {
     this.lastBoundFramebuffer = this.framebuffer;
     this.gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
   }
-
   this.gl.bindFramebuffer = function(target, framebuffer) {
     self.lastBoundFramebuffer = framebuffer ? framebuffer : self.framebuffer;
     // Silently make calls to bind the default framebuffer bind ours instead.
     self.realBindFramebuffer.call(gl, target, self.lastBoundFramebuffer);
   };
-
   this.cullFace = gl.getParameter(gl.CULL_FACE);
   this.depthTest = gl.getParameter(gl.DEPTH_TEST);
   this.blend = gl.getParameter(gl.BLEND);
   this.scissorTest = gl.getParameter(gl.SCISSOR_TEST);
   this.stencilTest = gl.getParameter(gl.STENCIL_TEST);
-
   gl.enable = function(pname) {
     switch (pname) {
       case gl.CULL_FACE: self.cullFace = true; break;
@@ -299,7 +248,6 @@ CardboardDistorter.prototype.patch = function() {
     }
     self.realEnable.call(gl, pname);
   };
-
   gl.disable = function(pname) {
     switch (pname) {
       case gl.CULL_FACE: self.cullFace = false; break;
@@ -310,7 +258,6 @@ CardboardDistorter.prototype.patch = function() {
     }
     self.realDisable.call(gl, pname);
   };
-
   this.colorMask = gl.getParameter(gl.COLOR_WRITEMASK);
   gl.colorMask = function(r, g, b, a) {
     self.colorMask[0] = r;
@@ -319,7 +266,6 @@ CardboardDistorter.prototype.patch = function() {
     self.colorMask[3] = a;
     self.realColorMask.call(gl, r, g, b, a);
   };
-
   this.clearColor = gl.getParameter(gl.COLOR_CLEAR_VALUE);
   gl.clearColor = function(r, g, b, a) {
     self.clearColor[0] = r;
@@ -328,7 +274,6 @@ CardboardDistorter.prototype.patch = function() {
     self.clearColor[3] = a;
     self.realClearColor.call(gl, r, g, b, a);
   };
-
   this.viewport = gl.getParameter(gl.VIEWPORT);
   gl.viewport = function(x, y, w, h) {
     self.viewport[0] = x;
@@ -337,68 +282,55 @@ CardboardDistorter.prototype.patch = function() {
     self.viewport[3] = h;
     self.realViewport.call(gl, x, y, w, h);
   };
-
   this.isPatched = true;
   Util.safariCssSizeWorkaround(canvas);
 };
-
 CardboardDistorter.prototype.unpatch = function() {
   if (!this.isPatched) {
     return;
   }
-
   var gl = this.gl;
   var canvas = this.gl.canvas;
-
   if (!Util.isIOS()) {
     Object.defineProperty(canvas, 'width', this.realCanvasWidth);
     Object.defineProperty(canvas, 'height', this.realCanvasHeight);
   }
   canvas.width = this.bufferWidth;
   canvas.height = this.bufferHeight;
-
   gl.bindFramebuffer = this.realBindFramebuffer;
   gl.enable = this.realEnable;
   gl.disable = this.realDisable;
   gl.colorMask = this.realColorMask;
   gl.clearColor = this.realClearColor;
   gl.viewport = this.realViewport;
-
   // Check to see if our fake backbuffer is bound and bind the real backbuffer
   // if that's the case.
   if (this.lastBoundFramebuffer == this.framebuffer) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
-
   this.isPatched = false;
-
   setTimeout(function() {
     Util.safariCssSizeWorkaround(canvas);
   }, 1);
 };
-
 CardboardDistorter.prototype.setTextureBounds = function(leftBounds, rightBounds) {
   if (!leftBounds) {
     leftBounds = [0, 0, 0.5, 1];
   }
-
   if (!rightBounds) {
     rightBounds = [0.5, 0, 0.5, 1];
   }
-
   // Left eye
   this.viewportOffsetScale[0] = leftBounds[0]; // X
   this.viewportOffsetScale[1] = leftBounds[1]; // Y
   this.viewportOffsetScale[2] = leftBounds[2]; // Width
   this.viewportOffsetScale[3] = leftBounds[3]; // Height
-
   // Right eye
   this.viewportOffsetScale[4] = rightBounds[0]; // X
   this.viewportOffsetScale[5] = rightBounds[1]; // Y
   this.viewportOffsetScale[6] = rightBounds[2]; // Width
   this.viewportOffsetScale[7] = rightBounds[3]; // Height
 };
-
 /**
  * Performs distortion pass on the injected backbuffer, rendering it to the real
  * backbuffer.
@@ -406,9 +338,7 @@ CardboardDistorter.prototype.setTextureBounds = function(leftBounds, rightBounds
 CardboardDistorter.prototype.submitFrame = function() {
   var gl = this.gl;
   var self = this;
-
   var glState = [];
-
   if (!this.dirtySubmitFrameBindings) {
     glState.push(
       gl.CURRENT_PROGRAM,
@@ -417,18 +347,15 @@ CardboardDistorter.prototype.submitFrame = function() {
       gl.TEXTURE_BINDING_2D, gl.TEXTURE0
     );
   }
-
   WGLUPreserveGLState(gl, glState, function(gl) {
     // Bind the real default framebuffer
     self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, null);
-
     var positionDivisor = 0;
     var texCoordDivisor = 0;
     if (self.instanceExt) {
       positionDivisor = gl.getVertexAttrib(self.attribs.position, self.instanceExt.VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
       texCoordDivisor = gl.getVertexAttrib(self.attribs.texCoord, self.instanceExt.VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
     }
-
     // Make sure the GL state is in a good place
     if (self.cullFace) { self.realDisable.call(gl, gl.CULL_FACE); }
     if (self.depthTest) { self.realDisable.call(gl, gl.DEPTH_TEST); }
@@ -437,19 +364,15 @@ CardboardDistorter.prototype.submitFrame = function() {
     if (self.stencilTest) { self.realDisable.call(gl, gl.STENCIL_TEST); }
     self.realColorMask.call(gl, true, true, true, true);
     self.realViewport.call(gl, 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-
     // If the backbuffer has an alpha channel clear every frame so the page
     // doesn't show through.
     if (self.ctxAttribs.alpha || Util.isIOS()) {
       self.realClearColor.call(gl, 0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
     }
-
     // Bind distortion program and mesh
     gl.useProgram(self.program);
-
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, self.indexBuffer);
-
     gl.bindBuffer(gl.ARRAY_BUFFER, self.vertexBuffer);
     gl.enableVertexAttribArray(self.attribs.position);
     gl.enableVertexAttribArray(self.attribs.texCoord);
@@ -463,46 +386,36 @@ CardboardDistorter.prototype.submitFrame = function() {
         self.instanceExt.vertexAttribDivisorANGLE(self.attribs.texCoord, 0);
       }
     }
-
     gl.activeTexture(gl.TEXTURE0);
     gl.uniform1i(self.uniforms.diffuse, 0);
     gl.bindTexture(gl.TEXTURE_2D, self.renderTarget);
-
     gl.uniform4fv(self.uniforms.viewportOffsetScale, self.viewportOffsetScale);
-
     // Draws both eyes
     gl.drawElements(gl.TRIANGLES, self.indexCount, gl.UNSIGNED_SHORT, 0);
-
     if (self.cardboardUI) {
       self.cardboardUI.renderNoState();
     }
-
     // Bind the fake default framebuffer again
     self.realBindFramebuffer.call(self.gl, gl.FRAMEBUFFER, self.framebuffer);
-
     // If preserveDrawingBuffer == false clear the framebuffer
     if (!self.ctxAttribs.preserveDrawingBuffer) {
       self.realClearColor.call(gl, 0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
     }
-
     if (!self.dirtySubmitFrameBindings) {
       self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, self.lastBoundFramebuffer);
     }
-
     // Restore state
     if (self.cullFace) { self.realEnable.call(gl, gl.CULL_FACE); }
     if (self.depthTest) { self.realEnable.call(gl, gl.DEPTH_TEST); }
     if (self.blend) { self.realEnable.call(gl, gl.BLEND); }
     if (self.scissorTest) { self.realEnable.call(gl, gl.SCISSOR_TEST); }
     if (self.stencilTest) { self.realEnable.call(gl, gl.STENCIL_TEST); }
-
     self.realColorMask.apply(gl, self.colorMask);
     self.realViewport.apply(gl, self.viewport);
     if (self.ctxAttribs.alpha || !self.ctxAttribs.preserveDrawingBuffer) {
       self.realClearColor.apply(gl, self.clearColor);
     }
-
     if (self.instanceExt) {
       if (positionDivisor != 0) {
         self.instanceExt.vertexAttribDivisorANGLE(self.attribs.position, positionDivisor);
@@ -512,7 +425,6 @@ CardboardDistorter.prototype.submitFrame = function() {
       }
     }
   });
-
   // Workaround for the fact that Safari doesn't allow us to patch the canvas
   // width and height correctly. After each submit frame check to see what the
   // real backbuffer size has been set to and resize the fake backbuffer size
@@ -526,7 +438,6 @@ CardboardDistorter.prototype.submitFrame = function() {
     }
   }
 };
-
 /**
  * Call when the deviceInfo has changed. At this point we need
  * to re-calculate the distortion mesh.
@@ -534,13 +445,11 @@ CardboardDistorter.prototype.submitFrame = function() {
 CardboardDistorter.prototype.updateDeviceInfo = function(deviceInfo) {
   var gl = this.gl;
   var self = this;
-
   var glState = [gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING];
   WGLUPreserveGLState(gl, glState, function(gl) {
     var vertices = self.computeMeshVertices_(self.meshWidth, self.meshHeight, deviceInfo);
     gl.bindBuffer(gl.ARRAY_BUFFER, self.vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
     // Indices don't change based on device parameters, so only compute once.
     if (!self.indexCount) {
       var indices = self.computeMeshIndices_(self.meshWidth, self.meshHeight);
@@ -550,14 +459,12 @@ CardboardDistorter.prototype.updateDeviceInfo = function(deviceInfo) {
     }
   });
 };
-
 /**
  * Build the distortion mesh vertices.
  * Based on code from the Unity cardboard plugin.
  */
 CardboardDistorter.prototype.computeMeshVertices_ = function(width, height, deviceInfo) {
   var vertices = new Float32Array(2 * width * height * 5);
-
   var lensFrustum = deviceInfo.getLeftEyeVisibleTanAngles();
   var noLensFrustum = deviceInfo.getLeftEyeNoLensTanAngles();
   var viewport = deviceInfo.getLeftEyeVisibleScreenRect(noLensFrustum);
@@ -568,7 +475,6 @@ CardboardDistorter.prototype.computeMeshVertices_ = function(width, height, devi
       for (var i = 0; i < width; i++, vidx++) {
         var u = i / (width - 1);
         var v = j / (height - 1);
-
         // Grid points regularly spaced in StreoScreen, and barrel distorted in
         // the mesh.
         var s = u;
@@ -581,10 +487,8 @@ CardboardDistorter.prototype.computeMeshVertices_ = function(width, height, devi
         var q = y * r / d;
         u = (p - noLensFrustum[0]) / (noLensFrustum[2] - noLensFrustum[0]);
         v = (q - noLensFrustum[3]) / (noLensFrustum[1] - noLensFrustum[3]);
-
         // Convert u,v to mesh screen coordinates.
         var aspect = deviceInfo.device.widthMeters / deviceInfo.device.heightMeters;
-
         // FIXME: The original Unity plugin multiplied U by the aspect ratio
         // and didn't multiply either value by 2, but that seems to get it
         // really close to correct looking for me. I hate this kind of "Don't
@@ -592,7 +496,6 @@ CardboardDistorter.prototype.computeMeshVertices_ = function(width, height, devi
         // explanation of what needs to happen here.
         u = (viewport.x + u * viewport.width - 0.5) * 2.0; //* aspect;
         v = (viewport.y + v * viewport.height - 0.5) * 2.0;
-
         vertices[(vidx * 5) + 0] = u; // position.x
         vertices[(vidx * 5) + 1] = v; // position.y
         vertices[(vidx * 5) + 2] = s; // texCoord.x
@@ -610,7 +513,6 @@ CardboardDistorter.prototype.computeMeshVertices_ = function(width, height, devi
   }
   return vertices;
 }
-
 /**
  * Build the distortion mesh indices.
  * Based on code from the Unity cardboard plugin.
@@ -651,7 +553,6 @@ CardboardDistorter.prototype.computeMeshIndices_ = function(width, height) {
   }
   return indices;
 };
-
 CardboardDistorter.prototype.getOwnPropertyDescriptor_ = function(proto, attrName) {
   var descriptor = Object.getOwnPropertyDescriptor(proto, attrName);
   // In some cases (ahem... Safari), the descriptor returns undefined get and
@@ -670,5 +571,4 @@ CardboardDistorter.prototype.getOwnPropertyDescriptor_ = function(proto, attrNam
   }
   return descriptor;
 };
-
 export default CardboardDistorter;

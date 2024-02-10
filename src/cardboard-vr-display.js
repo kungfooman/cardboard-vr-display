@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import CardboardDistorter from './cardboard-distorter.js';
 import CardboardUI from './cardboard-ui.js';
 import DeviceInfo from './device-info.js';
@@ -23,27 +22,21 @@ import ViewerSelector from './viewer-selector.js';
 import { VRFrameData, VRDisplay, VRDisplayCapabilities } from './base.js';
 import * as Util from './util.js';
 import Options from './options.js';
-
 var Eye = {
   LEFT: 'left',
   RIGHT: 'right'
 };
-
 /**
  * VRDisplay based on mobile device parameters and DeviceMotion APIs.
  */
 function CardboardVRDisplay(config) {
   var defaults = Util.extend({}, Options);
   config = Util.extend(defaults, config || {});
-
   VRDisplay.call(this, {
     wakelock: config.MOBILE_WAKE_LOCK,
   });
-
   this.config = config;
-
   this.displayName = 'Cardboard VRDisplay';
-
   this.capabilities = new VRDisplayCapabilities({
     hasPosition: false,
     hasOrientation: true,
@@ -51,36 +44,28 @@ function CardboardVRDisplay(config) {
     canPresent: true,
     maxLayers: 1
   });
-
   this.stageParameters = null;
-
   // "Private" members.
   this.bufferScale_ = this.config.BUFFER_SCALE;
   this.poseSensor_ = new PoseSensor(this.config);
   this.distorter_ = null;
   this.cardboardUI_ = null;
-
   this.dpdb_ = new Dpdb(this.config.DPDB_URL, this.onDeviceParamsUpdated_.bind(this));
   this.deviceInfo_ = new DeviceInfo(this.dpdb_.getDeviceParams(),
                                     config.ADDITIONAL_VIEWERS);
-
   this.viewerSelector_ = new ViewerSelector(config.DEFAULT_VIEWER);
   this.viewerSelector_.onChange(this.onViewerChanged_.bind(this));
-
   // Set the correct initial viewer.
   this.deviceInfo_.setViewer(this.viewerSelector_.getCurrentViewer());
-
   if (!this.config.ROTATE_INSTRUCTIONS_DISABLED) {
     this.rotateInstructions_ = new RotateInstructions();
   }
-
   if (Util.isIOS()) {
     // Listen for resize events to workaround this awful Safari bug.
     window.addEventListener('resize', this.onResize_.bind(this));
   }
 }
 CardboardVRDisplay.prototype = Object.create(VRDisplay.prototype);
-
 CardboardVRDisplay.prototype._getPose = function() {
   return {
     position: null,
@@ -91,7 +76,6 @@ CardboardVRDisplay.prototype._getPose = function() {
     angularAcceleration: null
   };
 }
-
 CardboardVRDisplay.prototype._resetPose = function() {
   // The non-devicemotion PoseSensor does not have resetPose implemented
   // as it has been deprecated from spec.
@@ -99,7 +83,6 @@ CardboardVRDisplay.prototype._resetPose = function() {
     this.poseSensor_.resetPose();
   }
 };
-
 CardboardVRDisplay.prototype._getFieldOfView = function(whichEye) {
   // TODO: FoV can be a little expensive to compute. Cache when device params change.
   var fieldOfView;
@@ -111,13 +94,10 @@ CardboardVRDisplay.prototype._getFieldOfView = function(whichEye) {
     console.error('Invalid eye provided: %s', whichEye);
     return null;
   }
-
   return fieldOfView;
 };
-
 CardboardVRDisplay.prototype._getEyeOffset = function(whichEye) {
   var offset;
-
   if (whichEye == Eye.LEFT) {
     offset = [-this.deviceInfo_.viewer.interLensDistance * 0.5, 0.0, 0.0];
   } else if (whichEye == Eye.RIGHT) {
@@ -126,21 +106,17 @@ CardboardVRDisplay.prototype._getEyeOffset = function(whichEye) {
     console.error('Invalid eye provided: %s', whichEye);
     return null;
   }
-
   return offset;
 };
-
 CardboardVRDisplay.prototype.getEyeParameters = function(whichEye) {
   var offset = this._getEyeOffset(whichEye);
   var fieldOfView = this._getFieldOfView(whichEye);
-
   var eyeParams = {
     offset: offset,
     // TODO: Should be able to provide better values than these.
     renderWidth: this.deviceInfo_.device.width * 0.5 * this.bufferScale_,
     renderHeight: this.deviceInfo_.device.height * this.bufferScale_,
   };
-
   Object.defineProperty(eyeParams, 'fieldOfView', {
     enumerable: true,
     get: function() {
@@ -149,37 +125,30 @@ CardboardVRDisplay.prototype.getEyeParameters = function(whichEye) {
       return fieldOfView;
     },
   });
-
   return eyeParams;
 };
-
 CardboardVRDisplay.prototype.onDeviceParamsUpdated_ = function(newParams) {
   if (this.config.DEBUG) {
     console.log('DPDB reported that device params were updated.');
   }
   this.deviceInfo_.updateDeviceParams(newParams);
-
   if (this.distorter_) {
     this.distorter_.updateDeviceInfo(this.deviceInfo_);
   }
 };
-
 CardboardVRDisplay.prototype.updateBounds_ = function () {
   if (this.layer_ && this.distorter_ && (this.layer_.leftBounds || this.layer_.rightBounds)) {
     this.distorter_.setTextureBounds(this.layer_.leftBounds, this.layer_.rightBounds);
   }
 };
-
 CardboardVRDisplay.prototype.beginPresent_ = function() {
   var gl = this.layer_.source.getContext('webgl');
   if (!gl)
     gl = this.layer_.source.getContext('experimental-webgl');
   if (!gl)
     gl = this.layer_.source.getContext('webgl2');
-
   if (!gl)
     return; // Can't do distortion without a WebGL context.
-
   // Provides a way to opt out of distortion
   if (this.layer_.predistorted) {
     if (!this.config.CARDBOARD_UI_DISABLED) {
@@ -197,7 +166,6 @@ CardboardVRDisplay.prototype.beginPresent_ = function() {
                                                  this.config.DIRTY_SUBMIT_FRAME_BINDINGS);
     this.distorter_.updateDeviceInfo(this.deviceInfo_);
   }
-
   if (this.cardboardUI_) {
     this.cardboardUI_.listen(function(e) {
       // Options clicked.
@@ -211,7 +179,6 @@ CardboardVRDisplay.prototype.beginPresent_ = function() {
       e.preventDefault();
     }.bind(this));
   }
-
   if (this.rotateInstructions_) {
     if (Util.isLandscapeMode() && Util.isMobile()) {
       // In landscape mode, temporarily show the "put into Cardboard"
@@ -221,20 +188,16 @@ CardboardVRDisplay.prototype.beginPresent_ = function() {
       this.rotateInstructions_.update();
     }
   }
-
   // Listen for orientation change events in order to show interstitial.
   this.orientationHandler = this.onOrientationChange_.bind(this);
   window.addEventListener('orientationchange', this.orientationHandler);
-
   // Listen for present display change events in order to update distorter dimensions
   this.vrdisplaypresentchangeHandler = this.updateBounds_.bind(this);
   window.addEventListener('vrdisplaypresentchange', this.vrdisplaypresentchangeHandler);
-
   // Fire this event initially, to give geometry-distortion clients the chance
   // to do something custom.
   this.fireVRDisplayDeviceParamsChange_();
 };
-
 CardboardVRDisplay.prototype.endPresent_ = function() {
   if (this.distorter_) {
     this.distorter_.destroy();
@@ -244,16 +207,13 @@ CardboardVRDisplay.prototype.endPresent_ = function() {
     this.cardboardUI_.destroy();
     this.cardboardUI_ = null;
   }
-
   if (this.rotateInstructions_) {
     this.rotateInstructions_.hide();
   }
   this.viewerSelector_.hide();
-
   window.removeEventListener('orientationchange', this.orientationHandler);
   window.removeEventListener('vrdisplaypresentchange', this.vrdisplaypresentchangeHandler);
 };
-
 /**
  * Called when the layer's `source` changes to a new canvas.
  * Used to re-setup the distortions and UI with new context.
@@ -262,7 +222,6 @@ CardboardVRDisplay.prototype.updatePresent_ = function() {
   this.endPresent_();
   this.beginPresent_();
 };
-
 CardboardVRDisplay.prototype.submitFrame = function(pose) {
   if (this.distorter_) {
     this.updateBounds_();
@@ -274,31 +233,25 @@ CardboardVRDisplay.prototype.submitFrame = function(pose) {
       gl = this.layer_.source.getContext('experimental-webgl');
     if (!gl)
       gl = this.layer_.source.getContext('webgl2');
-
     var canvas = gl.canvas;
     if (canvas.width != this.lastWidth || canvas.height != this.lastHeight) {
       this.cardboardUI_.onResize();
     }
     this.lastWidth = canvas.width;
     this.lastHeight = canvas.height;
-
     // Render the Cardboard UI.
     this.cardboardUI_.render();
   }
 };
-
 CardboardVRDisplay.prototype.onOrientationChange_ = function(e) {
   // Hide the viewer selector.
   this.viewerSelector_.hide();
-
   // Update the rotate instructions.
   if (this.rotateInstructions_) {
     this.rotateInstructions_.update();
   }
-
   this.onResize_();
 };
-
 CardboardVRDisplay.prototype.onResize_ = function(e) {
   if (this.layer_) {
     var gl = this.layer_.source.getContext('webgl');
@@ -326,24 +279,19 @@ CardboardVRDisplay.prototype.onResize_ = function(e) {
       'box-sizing: content-box',
     ];
     gl.canvas.setAttribute('style', cssProperties.join('; ') + ';');
-
     Util.safariCssSizeWorkaround(gl.canvas);
   }
 };
-
 CardboardVRDisplay.prototype.onViewerChanged_ = function(viewer) {
   this.deviceInfo_.setViewer(viewer);
-
   if (this.distorter_) {
     // Update the distortion appropriately.
     this.distorter_.updateDeviceInfo(this.deviceInfo_);
   }
-
   // Fire a new event containing viewer and device parameters for clients that
   // want to implement their own geometry-based distortion.
   this.fireVRDisplayDeviceParamsChange_();
 };
-
 CardboardVRDisplay.prototype.fireVRDisplayDeviceParamsChange_ = function() {
   var event = new CustomEvent('vrdisplaydeviceparamschange', {
     detail: {
@@ -353,8 +301,6 @@ CardboardVRDisplay.prototype.fireVRDisplayDeviceParamsChange_ = function() {
   });
   window.dispatchEvent(event);
 };
-
 CardboardVRDisplay.VRFrameData = VRFrameData;
 CardboardVRDisplay.VRDisplay = VRDisplay;
-
 export default CardboardVRDisplay;

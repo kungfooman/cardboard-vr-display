@@ -12,11 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import Distortion from './distortion.js';
 import { radToDeg, degToRad } from './math-util.js';
 import * as Util from './util.js';
-
 function Device(params) {
   this.width = params.width || Util.getScreenWidth();
   this.height = params.height || Util.getScreenHeight();
@@ -24,8 +22,6 @@ function Device(params) {
   this.heightMeters = params.heightMeters;
   this.bevelMeters = params.bevelMeters;
 }
-
-
 // Fallback Android device (based on Nexus 5 measurements) for use when
 // we can't recognize an Android device.
 var DEFAULT_ANDROID = new Device({
@@ -33,7 +29,6 @@ var DEFAULT_ANDROID = new Device({
   heightMeters: 0.062,
   bevelMeters: 0.004
 });
-
 // Fallback iOS device (based on iPhone6) for use when
 // we can't recognize an Android device.
 var DEFAULT_IOS = new Device({
@@ -41,8 +36,6 @@ var DEFAULT_IOS = new Device({
   heightMeters: 0.0584,
   bevelMeters: 0.004
 });
-
-
 var Viewers = {
   CardboardV1: new CardboardViewer({
     id: 'CardboardV1',
@@ -69,11 +62,8 @@ var Viewers = {
       -9.904169E-4, 6.183535E-5, -1.6981803E-6]
   })
 };
-
-
 var DEFAULT_LEFT_CENTER = {x: 0.5, y: 0.5};
 var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
-
 /**
  * Manages information about the device and the viewer.
  *
@@ -90,20 +80,16 @@ function DeviceInfo(deviceParams, additionalViewers) {
     Viewers[viewer.id] = new CardboardViewer(viewer);
   }
 }
-
 DeviceInfo.prototype.updateDeviceParams = function(deviceParams) {
   this.device = this.determineDevice_(deviceParams) || this.device;
 };
-
 DeviceInfo.prototype.getDevice = function() {
   return this.device;
 };
-
 DeviceInfo.prototype.setViewer = function(viewer) {
   this.viewer = viewer;
   this.distortion = new Distortion(this.viewer.distortionCoefficients);
 };
-
 DeviceInfo.prototype.determineDevice_ = function(deviceParams) {
   if (!deviceParams) {
     // No parameters, so use a default.
@@ -115,7 +101,6 @@ DeviceInfo.prototype.determineDevice_ = function(deviceParams) {
       return DEFAULT_ANDROID;
     }
   }
-
   // Compute device screen dimensions based on deviceParams.
   var METERS_PER_INCH = 0.0254;
   var metersPerPixelX = METERS_PER_INCH / deviceParams.xdpi;
@@ -128,7 +113,6 @@ DeviceInfo.prototype.determineDevice_ = function(deviceParams) {
     bevelMeters: deviceParams.bevelMm * 0.001,
   });
 };
-
 /**
  * Calculates field of view for the left eye.
  */
@@ -136,15 +120,12 @@ DeviceInfo.prototype.getDistortedFieldOfViewLeftEye = function() {
   var viewer = this.viewer;
   var device = this.device;
   var distortion = this.distortion;
-
   // Device.height and device.width for device in portrait mode, so transpose.
   var eyeToScreenDistance = viewer.screenLensDistance;
-
   var outerDist = (device.widthMeters - viewer.interLensDistance) / 2;
   var innerDist = viewer.interLensDistance / 2;
   var bottomDist = viewer.baselineLensDistance - device.bevelMeters;
   var topDist = device.heightMeters - bottomDist;
-
   var outerAngle = radToDeg * Math.atan(
       distortion.distort(outerDist / eyeToScreenDistance));
   var innerAngle = radToDeg * Math.atan(
@@ -153,7 +134,6 @@ DeviceInfo.prototype.getDistortedFieldOfViewLeftEye = function() {
       distortion.distort(bottomDist / eyeToScreenDistance));
   var topAngle = radToDeg * Math.atan(
       distortion.distort(topDist / eyeToScreenDistance));
-
   return {
     leftDegrees: Math.min(outerAngle, viewer.fov),
     rightDegrees: Math.min(innerAngle, viewer.fov),
@@ -161,7 +141,6 @@ DeviceInfo.prototype.getDistortedFieldOfViewLeftEye = function() {
     upDegrees: Math.min(topAngle, viewer.fov)
   };
 };
-
 /**
  * Calculates the tan-angles from the maximum FOV for the left eye for the
  * current device and screen parameters.
@@ -170,7 +149,6 @@ DeviceInfo.prototype.getLeftEyeVisibleTanAngles = function() {
   var viewer = this.viewer;
   var device = this.device;
   var distortion = this.distortion;
-
   // Tan-angles from the max FOV.
   var fovLeft = Math.tan(-degToRad * viewer.fov);
   var fovTop = Math.tan(degToRad * viewer.fov);
@@ -197,7 +175,6 @@ DeviceInfo.prototype.getLeftEyeVisibleTanAngles = function() {
   result[3] = Math.max(fovBottom, screenBottom);
   return result;
 };
-
 /**
  * Calculates the tan-angles from the maximum FOV for the left eye for the
  * current device and screen parameters, assuming no lenses.
@@ -206,7 +183,6 @@ DeviceInfo.prototype.getLeftEyeNoLensTanAngles = function() {
   var viewer = this.viewer;
   var device = this.device;
   var distortion = this.distortion;
-
   var result = new Float32Array(4);
   // Tan-angles from the max FOV.
   var fovLeft = distortion.distortInverse(Math.tan(-degToRad * viewer.fov));
@@ -233,7 +209,6 @@ DeviceInfo.prototype.getLeftEyeNoLensTanAngles = function() {
   result[3] = Math.max(fovBottom, screenBottom);
   return result;
 };
-
 /**
  * Calculates the screen rectangle visible from the left eye for the
  * current device and screen parameters.
@@ -241,7 +216,6 @@ DeviceInfo.prototype.getLeftEyeNoLensTanAngles = function() {
 DeviceInfo.prototype.getLeftEyeVisibleScreenRect = function(undistortedFrustum) {
   var viewer = this.viewer;
   var device = this.device;
-
   var dist = viewer.screenLensDistance;
   var eyeX = (device.widthMeters - viewer.interLensDistance) / 2;
   var eyeY = viewer.baselineLensDistance - device.bevelMeters;
@@ -256,12 +230,10 @@ DeviceInfo.prototype.getLeftEyeVisibleScreenRect = function(undistortedFrustum) 
     height: top - bottom
   };
 };
-
 DeviceInfo.prototype.getFieldOfViewLeftEye = function(opt_isUndistorted) {
   return opt_isUndistorted ? this.getUndistortedFieldOfViewLeftEye() :
       this.getDistortedFieldOfViewLeftEye();
 };
-
 DeviceInfo.prototype.getFieldOfViewRightEye = function(opt_isUndistorted) {
   var fov = this.getFieldOfViewLeftEye(opt_isUndistorted);
   return {
@@ -271,13 +243,11 @@ DeviceInfo.prototype.getFieldOfViewRightEye = function(opt_isUndistorted) {
     downDegrees: fov.downDegrees
   };
 };
-
 /**
  * Calculates undistorted field of view for the left eye.
  */
 DeviceInfo.prototype.getUndistortedFieldOfViewLeftEye = function() {
   var p = this.getUndistortedParams_();
-
   return {
     leftDegrees: radToDeg * Math.atan(p.outerDist),
     rightDegrees: radToDeg * Math.atan(p.innerDist),
@@ -285,12 +255,10 @@ DeviceInfo.prototype.getUndistortedFieldOfViewLeftEye = function() {
     upDegrees: radToDeg * Math.atan(p.topDist)
   };
 };
-
 DeviceInfo.prototype.getUndistortedViewportLeftEye = function() {
   var p = this.getUndistortedParams_();
   var viewer = this.viewer;
   var device = this.device;
-
   // Distances stored in local variables are in tan-angle units unless otherwise
   // noted.
   var eyeToScreenDistance = viewer.screenLensDistance;
@@ -298,7 +266,6 @@ DeviceInfo.prototype.getUndistortedViewportLeftEye = function() {
   var screenHeight = device.heightMeters / eyeToScreenDistance;
   var xPxPerTanAngle = device.width / screenWidth;
   var yPxPerTanAngle = device.height / screenHeight;
-
   var x = Math.round((p.eyePosX - p.outerDist) * xPxPerTanAngle);
   var y = Math.round((p.eyePosY - p.bottomDist) * yPxPerTanAngle);
   return {
@@ -308,28 +275,23 @@ DeviceInfo.prototype.getUndistortedViewportLeftEye = function() {
     height: Math.round((p.eyePosY + p.topDist) * yPxPerTanAngle) - y
   };
 };
-
 DeviceInfo.prototype.getUndistortedParams_ = function() {
   var viewer = this.viewer;
   var device = this.device;
   var distortion = this.distortion;
-
   // Most of these variables in tan-angle units.
   var eyeToScreenDistance = viewer.screenLensDistance;
   var halfLensDistance = viewer.interLensDistance / 2 / eyeToScreenDistance;
   var screenWidth = device.widthMeters / eyeToScreenDistance;
   var screenHeight = device.heightMeters / eyeToScreenDistance;
-
   var eyePosX = screenWidth / 2 - halfLensDistance;
   var eyePosY = (viewer.baselineLensDistance - device.bevelMeters) / eyeToScreenDistance;
-
   var maxFov = viewer.fov;
   var viewerMax = distortion.distortInverse(Math.tan(degToRad * maxFov));
   var outerDist = Math.min(eyePosX, viewerMax);
   var innerDist = Math.min(halfLensDistance, viewerMax);
   var bottomDist = Math.min(eyePosY, viewerMax);
   var topDist = Math.min(screenHeight - eyePosY, viewerMax);
-
   return {
     outerDist: outerDist,
     innerDist: innerDist,
@@ -339,31 +301,25 @@ DeviceInfo.prototype.getUndistortedParams_ = function() {
     eyePosY: eyePosY
   };
 };
-
-
 function CardboardViewer(params) {
   // A machine readable ID.
   this.id = params.id;
   // A human readable label.
   this.label = params.label;
-
   // Field of view in degrees (per side).
   this.fov = params.fov;
-
   // Distance between lens centers in meters.
   this.interLensDistance = params.interLensDistance;
   // Distance between viewer baseline and lens center in meters.
   this.baselineLensDistance = params.baselineLensDistance;
   // Screen-to-lens distance in meters.
   this.screenLensDistance = params.screenLensDistance;
-
   // Distortion coefficients.
   this.distortionCoefficients = params.distortionCoefficients;
   // Inverse distortion coefficients.
   // TODO: Calculate these from distortionCoefficients in the future.
   this.inverseCoefficients = params.inverseCoefficients;
 }
-
 // Export viewer information.
 DeviceInfo.Viewers = Viewers;
 export default DeviceInfo;

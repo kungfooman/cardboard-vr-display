@@ -12,14 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 /**
  * TODO(smus): Implement coefficient inversion.
  */
 function Distortion(coefficients) {
   this.coefficients = coefficients;
 }
-
 /**
  * Calculates the inverse distortion for a radius.
  * </p><p>
@@ -44,7 +42,6 @@ Distortion.prototype.distortInverse = function(radius) {
   }
   return r1;
 };
-
 /**
  * Distorts a radius by its distortion factor from the center of the lenses.
  *
@@ -59,5 +56,4 @@ Distortion.prototype.distort = function(radius) {
   }
   return (ret + 1) * radius;
 };
-
 export default Distortion;

@@ -12,18 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 function SensorSample(sample, timestampS) {
   this.set(sample, timestampS);
 };
-
 SensorSample.prototype.set = function(sample, timestampS) {
   this.sample = sample;
   this.timestampS = timestampS;
 };
-
 SensorSample.prototype.copy = function(sensorSample) {
   this.set(sensorSample.sample, sensorSample.timestampS);
 };
-
 export default SensorSample;
