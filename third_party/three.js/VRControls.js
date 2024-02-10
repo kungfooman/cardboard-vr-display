@@ -1,15 +1,16 @@
-import * as THREE from 'three';
 /**
  * @author dmarcos / https://github.com/dmarcos
  * @author mrdoob / http://mrdoob.com
+ * @author kungfooman / https://github.com/kungfooman
  */
+import {Matrix4} from 'three';
 /**
  * VRControls applies the WebVR transformations to a three.js camera object.
  */
 function VRControls(object, onError) {
 	var scope = this;
 	var vrDisplay, vrDisplays;
-	var standingMatrix = new THREE.Matrix4();
+	const standingMatrix = new Matrix4();
 	var frameData = null;
 	if ( 'VRFrameData' in window ) {
 		frameData = new VRFrameData();

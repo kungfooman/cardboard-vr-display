@@ -1,14 +1,30 @@
-import * as THREE from 'three';
 /**
  * @author dmarcos / https://github.com/dmarcos
  * @author mrdoob / http://mrdoob.com
- *
+ * @author kungfooman / https://github.com/kungfooman
+ */
+import * as THREE from 'three';
+/**
+ * @typedef {object} FieldOfViewTan
+ * @property {number} upTan
+ * @property {number} downTan
+ * @property {number} leftTan
+ * @property {number} rightTan
+ */
+/**
+ * @typedef {object} ScaleOffset
+ * @property {[pxscale: number, pyscale: number]} scale
+ * @property {[pxoffset: number, pyoffset: number]} offset
+ */
+/**
  * VREffect handles stereo camera setup and rendering.
  *
  * WebVR Spec: http://mozvr.github.io/webvr-spec/webvr.html
  *
  * Firefox: http://mozvr.com/downloads/
  * Chromium: https://webvr.info/get-chrome
+ * @param {any} renderer
+ * @param {function} [onError]
  */
 function VREffect(renderer, onError) {
 	var vrDisplay, vrDisplays;
@@ -277,13 +293,24 @@ function VREffect(renderer, onError) {
 		eyeMatrixL.getInverse( eyeMatrixL );
 		eyeMatrixR.getInverse( eyeMatrixR );
 	}
+	/**
+	 * @param {FieldOfViewTan} fov 
+	 * @returns {ScaleOffset}
+	 */
 	function fovToNDCScaleOffset( fov ) {
 		var pxscale = 2.0 / ( fov.leftTan + fov.rightTan );
 		var pxoffset = ( fov.leftTan - fov.rightTan ) * pxscale * 0.5;
 		var pyscale = 2.0 / ( fov.upTan + fov.downTan );
 		var pyoffset = ( fov.upTan - fov.downTan ) * pyscale * 0.5;
-		return { scale: [ pxscale, pyscale ], offset: [ pxoffset, pyoffset ] };
+		return {scale: [pxscale, pyscale], offset: [pxoffset, pyoffset]};
 	}
+	/**
+	 * @param {FieldOfViewTan} fov 
+	 * @param {boolean} rightHanded 
+	 * @param {number} zNear 
+	 * @param {number} zFar 
+	 * @returns {THREE.Matrix4}
+	 */
 	function fovPortToProjection( fov, rightHanded, zNear, zFar ) {
 		rightHanded = rightHanded === undefined ? true : rightHanded;
 		zNear = zNear === undefined ? 0.01 : zNear;
@@ -320,22 +347,21 @@ function VREffect(renderer, onError) {
 		return mobj;
 	}
 	/**
-	 * 
-	 * @param {*} fov 
-	 * @param {*} rightHanded 
-	 * @param {*} zNear 
-	 * @param {*} zFar 
-	 * @returns 
+	 * @param {import('../../src/base').FieldOfView} fov 
+	 * @param {boolean} rightHanded 
+	 * @param {number} zNear 
+	 * @param {number} zFar 
+	 * @returns {THREE.Matrix4}
 	 */
 	function fovToProjection( fov, rightHanded, zNear, zFar ) {
-		var DEG2RAD = Math.PI / 180.0;
-		var fovPort = {
-			upTan: Math.tan( fov.upDegrees * DEG2RAD ),
-			downTan: Math.tan( fov.downDegrees * DEG2RAD ),
-			leftTan: Math.tan( fov.leftDegrees * DEG2RAD ),
-			rightTan: Math.tan( fov.rightDegrees * DEG2RAD )
+		const DEG2RAD = Math.PI / 180.0;
+		const fovPort = {
+			upTan   : Math.tan(fov.upDegrees    * DEG2RAD),
+			downTan : Math.tan(fov.downDegrees  * DEG2RAD),
+			leftTan : Math.tan(fov.leftDegrees  * DEG2RAD),
+			rightTan: Math.tan(fov.rightDegrees * DEG2RAD),
 		};
-		return fovPortToProjection( fovPort, rightHanded, zNear, zFar );
+		return fovPortToProjection(fovPort, rightHanded, zNear, zFar);
 	}
 };
 export {VREffect};

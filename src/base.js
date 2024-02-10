@@ -26,6 +26,14 @@ var raf = window.requestAnimationFrame;
 var caf = window.cancelAnimationFrame;
 
 /**
+ * @typedef {object} FieldOfView
+ * @property {number} downDegrees
+ * @property {number} leftDegrees
+ * @property {number} rightDegrees
+ * @property {number} upDegrees
+ */
+
+/**
  * The base class for all VR frame data.
  */
 
