@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {VRControls} from '../third_party/three.js/VRControls.js';
 import {VREffect} from '../third_party/three.js/VREffect.js';
-//import {CardboardVRDisplay} from '../src/cardboard-vr-display.js';
+import {CardboardVRDisplay} from '../src/cardboard-vr-display.js';
 // Get config from URL
 var config = (function() {
   var config = {};
