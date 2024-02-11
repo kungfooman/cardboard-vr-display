@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 -->
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <title>Cardboard VRDisplay Demo</title>
@@ -35,12 +33,10 @@ html, body {
   padding: 0;
   overflow: hidden;
 }
-
 canvas {
   position: absolute;
   top: 0;
 }
-
 #buttons {
   position: fixed;
   top: 0;
@@ -50,24 +46,22 @@ canvas {
 }
 </style>
 </head>
-
 <body>
-
   <div id="buttons">
     <button id="fullscreen">Fullscreen</button>
     <button id="vr">VR (WebVR/Mobile only)</button>
     <button id="reset">Reset</button>
   </div>
-
 </body>
-
 <script>
 document.addEventListener('touchmove', function(e) {
   e.preventDefault();
 });
 </script>
 <script src="../dist/cardboard-vr-display.js"></script>
+<script>
+  Object.assign(window, CardboardVRDisplay);
+</script>
 <script src="importmap.js"></script>
 <script type="module" src="index.js"></script>
-
 </html>

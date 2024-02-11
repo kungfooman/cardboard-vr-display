@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 import * as Util from './util.js';
-import NoSleep from 'nosleep.js/dist/NoSleep.js';
+import {NoSleep} from './nosleep/index.js';
 // Start at a higher number to reduce chance of conflict.
 var nextDisplayId = 1000;
 var defaultLeftBounds = [0, 0, 0.5, 1];

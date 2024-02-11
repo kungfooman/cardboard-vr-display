@@ -303,4 +303,4 @@ CardboardVRDisplay.prototype.fireVRDisplayDeviceParamsChange_ = function() {
 };
 CardboardVRDisplay.VRFrameData = VRFrameData;
 CardboardVRDisplay.VRDisplay = VRDisplay;
-export default CardboardVRDisplay;
+export {CardboardVRDisplay};

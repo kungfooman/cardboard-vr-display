@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 import * as Util from './util.js';
-import WGLUPreserveGLState from 'gl-preserve-state';
+import {WGLUPreserveGLState} from './gl-preserve-state/index.js';
 var distortionVS = [
   'attribute vec2 position;',
   'attribute vec3 texCoord;',
