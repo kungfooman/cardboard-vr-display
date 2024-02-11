@@ -14,7 +14,7 @@
  */
 // Offline cache of the DPDB, to be used until we load the online one (and
 // as a fallback in case we can't load the online one).
-import DPDB_CACHE from 'webvr-polyfill-dpdb';
+import {DPDB_CACHE} from './dpdb-cache.js';
 import * as Util from './util.js';
 /**
  * Calculates device parameters based on the DPDB (Device Parameter Database).
@@ -24,6 +24,8 @@ import * as Util from './util.js';
  * of the DPDB and updates the device info if a better match is found.
  * Calls the onDeviceParamsUpdated callback when there is an update to the
  * device information.
+ * @param {string} url
+ * @param {function} onDeviceParamsUpdated
  */
 function Dpdb(url, onDeviceParamsUpdated) {
   // Start with the offline DPDB cache while we are loading the real one.
@@ -123,6 +125,13 @@ Dpdb.prototype.calcDeviceParams_ = function() {
   console.warn('No DPDB device match.');
   return null;
 };
+/**
+ * @param {import('./dpdb-formatted.js').DpdbRule} rule - The DPDB rule.
+ * @param {string} ua - The user agent.
+ * @param {number} screenWidth - The screen width.
+ * @param {number} screenHeight - The screen height.
+ * @returns {boolean}
+ */
 Dpdb.prototype.ruleMatches_ = function(rule, ua, screenWidth, screenHeight) {
   // We can only match 'ua' and 'res' rules, not other types like 'mdmh'
   // (which are meant for native platforms).

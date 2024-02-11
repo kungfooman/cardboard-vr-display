@@ -39,7 +39,6 @@
     "url": "https://github.com/immersive-web/cardboard-vr-display/issues"
   },
   "dependencies": {
-    "three": "^0.99.0",
-    "webvr-polyfill-dpdb": "^1.0.17"
+    "three": "^0.99.0"
   }
 }
