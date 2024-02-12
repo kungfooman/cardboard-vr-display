@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import {VRControls} from '../third_party/three.js/VRControls.js';
 import {VREffect} from '../third_party/three.js/VREffect.js';
 import {CardboardVRDisplay} from '../src/cardboard-vr-display.js';
+import * as Index from '../src/index.js';
+import {GLTFLoader} from '../third_party/three.js/GLTFLoader.js';
+Object.assign(window, Index);
 // Get config from URL
 var config = (function() {
   var config = {};
@@ -33,6 +36,7 @@ function VRFrameData () {
 window.VRFrameData = VRFrameData;
 console.log('creating CardboardVRDisplay with options', config);
 var vrDisplay = new CardboardVRDisplay(config);
+window.vrDisplay = vrDisplay;
 // If loading this inside of an iframe (see iframe.html),
 // force using the `devicemotion` sensor fusion, rather than
 // newer Generic Sensors due to an issue with sensors
@@ -61,9 +65,40 @@ var reticle = new THREE.Mesh(
   new THREE.RingBufferGeometry(0.005, 0.01, 15),
   new THREE.MeshBasicMaterial({ color: 0xffffff })
 );
+const models = [
+  {
+    url: '/libwebgame_assets/gltf/marbleTower/',
+    index: 'marbleTower.gltf',
+    //scale: 
+  }, {
+    url: '/libwebgame_assets/gltf/SambaDancing/',
+    index: 'SambaDancing.gltf'
+  }
+];
+const model = models[0];
+const gltfURL = model.url;
+const gltfIndex = model.index;
+const gltfLoader = new GLTFLoader().setPath(gltfURL);
+/** @type {THREE.AnimationMixer|undefined} */
+let mixer;
+gltfLoader.load(gltfIndex, function (gltf) {
+  console.log('gltf', gltf);
+  const s = 0.002;
+  gltf.scene.scale.set(s, s, s);
+  gltf.scene.position.set(0, 0, -0.5);
+  window.gltf = gltf;
+  if (gltf.animations.length) {
+    mixer = new THREE.AnimationMixer(gltf.scene);
+    mixer.clipAction(gltf.animations[0]).play(); 
+    window.mixer = mixer;
+  }
+  scene.add(gltf.scene);
+});
 reticle.position.z = -0.5;
 camera.add(reticle);
 scene.add(camera);
+const light = new THREE.AmbientLight( 0x404040 ); // soft white light
+scene.add( light );
 // Apply VR headset positional data to camera.
 var controls = new VRControls(camera);
 // Apply VR stereo rendering to renderer.
@@ -87,13 +122,16 @@ function onTextureLoaded(texture) {
   });
   var skybox = new THREE.Mesh(geometry, material);
   scene.add(skybox);
+  window.skybox = skybox;
 }
 // Create 3D objects.
 var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
 var material = new THREE.MeshNormalMaterial();
 var cube = new THREE.Mesh(geometry, material);
+const clock = new THREE.Clock();
 // Position cube mesh
 cube.position.z = -1;
+window.cube = cube;
 // Add cube mesh to your three.js scene
 scene.add(cube);
 // Request animation frame loop function
@@ -105,6 +143,9 @@ function animate(timestamp) {
   cube.rotation.y += delta * 0.0006;
   // Update VR headset position and apply to camera.
   controls.update();
+  if (mixer) {
+    mixer.update(clock.getDelta());
+  }
   // Render the scene.
   effect.render(scene, camera);
   // Keep looping.
