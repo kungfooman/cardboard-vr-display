@@ -1,41 +1,49 @@
-/*
- * Copyright 2016 Google Inc. All Rights Reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 import fs from 'fs';
-import path from 'path';
-import json from 'rollup-plugin-json';
-import commonjs from 'rollup-plugin-commonjs';
-import resolve from 'rollup-plugin-node-resolve';
-import cleanup from 'rollup-plugin-cleanup';
-const babel = require('rollup-plugin-babel');
-const banner = fs.readFileSync(path.join(__dirname, 'licenses.txt'));
-export default {
+import resolve from '@rollup/plugin-node-resolve';
+import {runtimeTypeInspector} from '@runtime-type-inspector/plugin-rollup';
+import {dirname, join       } from 'path';
+import {fileURLToPath       } from 'url';
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const banner = fs.readFileSync(join(__dirname, 'licenses.txt'));
+const targetUMD = {
   input: 'src/index.js',
   output: {
     file: './dist/cardboard-vr-display.js',
     format: 'umd',
     name: 'CardboardVRDisplay',
   },
-  banner: banner,
+  banner,
   plugins: [
-    json(),
-    babel({
-      plugins: ['external-helpers'],
-      exclude: 'node_modules/**',
-    }),
     resolve(),
-    commonjs(),
-    cleanup(),
   ]
 };
+const targetESM = {
+  input: 'src/index.js',
+  output: {
+    file: './dist/cardboard-vr-display.mjs',
+    format: 'es',
+    name: 'CardboardVRDisplay',
+  },
+  banner,
+  plugins: [
+    resolve(),
+  ]
+};
+const targetRTI = {
+  input: 'src/index-rti.js',
+  output: {
+    file: './dist/cardboard-vr-display-rti.mjs',
+    format: 'es'
+  },
+  banner,
+  plugins: [
+    resolve(),
+    runtimeTypeInspector({
+      ignoredFiles: [
+        'node_modules',
+      ]
+    }),
+  ]
+};
+const targets = [targetUMD, targetESM, targetRTI];
+export default targets;

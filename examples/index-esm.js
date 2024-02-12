@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import {VRControls} from '../third_party/three.js/VRControls.js';
 import {VREffect} from '../third_party/three.js/VREffect.js';
-import {CardboardVRDisplay} from '../src/cardboard-vr-display.js';
-import * as Index from '../src/index.js';
+import {CardboardVRDisplay} from 'cardboard-vr-display';
+import * as Index from 'cardboard-vr-display';
 import {GLTFLoader} from '../third_party/three.js/GLTFLoader.js';
 Object.assign(window, Index);
 // Get config from URL

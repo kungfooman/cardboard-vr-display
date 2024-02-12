@@ -7,18 +7,14 @@
     "Brandon Jones <tojiro@gmail.com>",
     "Jordan Santell <jordan@jsantell.com>"
   ],
+  "type": "module",
   "description": "A Cardboard VR implementation of a WebVR 1.1 VRDisplay for polyfilling the WebVR API",
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-preset-env": "^1.7.0",
-    "rollup": "^0.50.0",
-    "rollup-plugin-babel": "^3.0.2",
-    "rollup-plugin-cleanup": "^1.0.1",
-    "rollup-plugin-commonjs": "^8.2.1",
-    "rollup-plugin-json": "^2.3.0",
-    "rollup-plugin-node-resolve": "^3.0.0"
+    "@babel/core": "^7.23.2",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/pluginutils": "^5.1.0",
+    "@runtime-type-inspector/plugin-rollup": "^3.2.0",
+    "rollup": "^3.29.4"
   },
   "main": "dist/cardboard-vr-display",
   "keywords": [

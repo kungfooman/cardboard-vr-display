@@ -7,6 +7,12 @@ function importFile(content) {
 }
 const imports = {
   'three': '../node_modules/three/build/three.module.js',
+  // Straight from source.
+  //'cardboard-vr-display': '../src/index.js',
+  // ESM build
+  //'cardboard-vr-display': '../dist/cardboard-vr-display.mjs',
+  // ESM build with Runtime Type Inspector validations
+  'cardboard-vr-display': '../dist/cardboard-vr-display-rti.mjs',
   "fs": importFile("export default {};"),
 };
 const importmap = document.createElement("script");

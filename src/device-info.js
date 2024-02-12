@@ -316,7 +316,7 @@ DeviceInfo.prototype.getUndistortedParams_ = function() {
 };
 /**
  * @typedef {object} CardboardViewerParams
- * @property {number} id
+ * @property {string} id
  * @property {string} label
  * @property {number} fov
  * @property {number} interLensDistance
