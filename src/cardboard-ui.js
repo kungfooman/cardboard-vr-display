@@ -221,4 +221,4 @@ CardboardUI.prototype.renderNoState = function() {
   gl.drawArrays(gl.TRIANGLE_STRIP, this.gearOffset, this.gearVertexCount);
   gl.drawArrays(gl.TRIANGLE_STRIP, this.arrowOffset, this.arrowVertexCount);
 };
-export default CardboardUI;
+export {CardboardUI};

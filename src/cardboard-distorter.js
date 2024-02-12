@@ -571,4 +571,4 @@ CardboardDistorter.prototype.getOwnPropertyDescriptor_ = function(proto, attrNam
   }
   return descriptor;
 };
-export default CardboardDistorter;
+export {CardboardDistorter};

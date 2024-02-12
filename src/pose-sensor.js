@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import FusionPoseSensor from './sensor-fusion/fusion-pose-sensor.js';
-import { Vector3, Quaternion } from './math-util.js';
+import {FusionPoseSensor   } from './sensor-fusion/fusion-pose-sensor.js';
+import {Vector3, Quaternion} from './math-util.js';
 // Frequency which the Sensors will attempt to fire their
 // `reading` functions at. Use 60hz since we generally
 // can't get higher without native VR hardware.
@@ -28,7 +28,7 @@ SENSOR_TO_VR.multiply(new Quaternion().setFromAxisAngle(Z_AXIS, Math.PI / 2));
  * An abstraction class around either using the new RelativeOrientationSensor,
  * or `devicemotion` events with complimentary filter via fusion-pose-sensor.js.
  */
-export default class PoseSensor {
+class PoseSensor {
   constructor(config) {
     this.config = config;
     this.sensor = null;
@@ -147,3 +147,4 @@ export default class PoseSensor {
   }
   _onSensorRead() {}
 }
+export {PoseSensor};

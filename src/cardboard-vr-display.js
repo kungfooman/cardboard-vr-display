@@ -12,17 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import CardboardDistorter from './cardboard-distorter.js';
-import CardboardUI from './cardboard-ui.js';
-import DeviceInfo from './device-info.js';
-import Dpdb from './dpdb.js';
-import PoseSensor from './pose-sensor.js';
-import RotateInstructions from './rotate-instructions.js';
-import ViewerSelector from './viewer-selector.js';
+import {CardboardDistorter} from './cardboard-distorter.js';
+import {CardboardUI} from './cardboard-ui.js';
+import {DeviceInfo} from './device-info.js';
+import {Dpdb} from './dpdb.js';
+import {PoseSensor} from './pose-sensor.js';
+import {RotateInstructions} from './rotate-instructions.js';
+import {ViewerSelector} from './viewer-selector.js';
 import { VRFrameData, VRDisplay, VRDisplayCapabilities } from './base.js';
+import {config as optionsConfig} from './options.js';
 import * as Util from './util.js';
-import Options from './options.js';
-var Eye = {
+const Eye = {
   LEFT: 'left',
   RIGHT: 'right'
 };
@@ -30,7 +30,7 @@ var Eye = {
  * VRDisplay based on mobile device parameters and DeviceMotion APIs.
  */
 function CardboardVRDisplay(config) {
-  var defaults = Util.extend({}, Options);
+  var defaults = Util.extend({}, optionsConfig);
   config = Util.extend(defaults, config || {});
   VRDisplay.call(this, {
     wakelock: config.MOBILE_WAKE_LOCK,

@@ -13,14 +13,15 @@
  * limitations under the License.
  */
 /**
- * TODO(smus): Implement coefficient inversion.
+ * @todo Implement coefficient inversion.
+ * @param {number[]} coefficients
  */
 function Distortion(coefficients) {
   this.coefficients = coefficients;
 }
 /**
  * Calculates the inverse distortion for a radius.
- * </p><p>
+ *
  * Allows to compute the original undistorted radius from a distorted one.
  * See also getApproximateInverseDistortion() for a faster but potentially
  * less accurate method.
@@ -30,12 +31,12 @@ function Distortion(coefficients) {
  */
 Distortion.prototype.distortInverse = function(radius) {
   // Secant method.
-  var r0 = 0;
-  var r1 = 1;
-  var dr0 = radius - this.distort(r0);
+  let r0 = 0;
+  let r1 = 1;
+  let dr0 = radius - this.distort(r0);
   while (Math.abs(r1 - r0) > 0.0001 /** 0.1mm */) {
-    var dr1 = radius - this.distort(r1);
-    var r2 = r1 - dr1 * ((r1 - r0) / (dr1 - dr0));
+    const dr1 = radius - this.distort(r1);
+    const r2 = r1 - dr1 * ((r1 - r0) / (dr1 - dr0));
     r0 = r1;
     r1 = r2;
     dr0 = dr1;
@@ -49,11 +50,11 @@ Distortion.prototype.distortInverse = function(radius) {
  * @return {Number} The distorted radius in tan-angle units.
  */
 Distortion.prototype.distort = function(radius) {
-  var r2 = radius * radius;
-  var ret = 0;
+  const r2 = radius * radius;
+  let ret = 0;
   for (var i = 0; i < this.coefficients.length; i++) {
     ret = r2 * (ret + this.coefficients[i]);
   }
   return (ret + 1) * radius;
 };
-export default Distortion;
+export {Distortion};

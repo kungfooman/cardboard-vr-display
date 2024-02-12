@@ -119,4 +119,4 @@ RotateInstructions.prototype.update = function() {
 RotateInstructions.prototype.loadIcon_ = function() {
   this.icon = Util.dataUri('image/svg+xml', rotateInstructionsAsset);
 };
-export default RotateInstructions;
+export {RotateInstructions};

@@ -72,4 +72,4 @@ const config = {
   // and gl.TEXTURE_BINDING_2D for texture unit 0.
   DIRTY_SUBMIT_FRAME_BINDINGS: false,
 };
-export default config;
+export {config};

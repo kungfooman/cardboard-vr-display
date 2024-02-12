@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import ComplementaryFilter from './complementary-filter.js';
-import PosePredictor from './pose-predictor.js';
+import {ComplementaryFilter} from './complementary-filter.js';
+import {PosePredictor      } from './pose-predictor.js';
 import * as MathUtil from '../math-util.js';
 import * as Util from '../util.js';
 /**
@@ -89,7 +89,7 @@ FusionPoseSensor.prototype.getOrientation = function() {
       return q;
     })();
     orientation = this._deviceOrientationQ;
-    var out = new MathUtil.Quaternion();
+    const out = new MathUtil.Quaternion();
     out.copy(orientation);
     out.multiply(this.deviceOrientationFilterToWorldQ);
     out.multiply(this.resetQ);
@@ -117,7 +117,7 @@ FusionPoseSensor.prototype.getOrientation = function() {
                                                    this.previousTimestampS);
   }
   // Convert to THREE coordinate system: -Z forward, Y up, X right.
-  var out = new MathUtil.Quaternion();
+  const out = new MathUtil.Quaternion();
   out.copy(this.filterToWorldQ);
   out.multiply(this.resetQ);
   out.multiply(orientation);
@@ -258,9 +258,9 @@ FusionPoseSensor.prototype.start = function() {
   }
 };
 FusionPoseSensor.prototype.stop = function() {
-  window.removeEventListener('devicemotion', this.onDeviceMotionCallback_);
+  window.removeEventListener('devicemotion'     , this.onDeviceMotionCallback_     );
   window.removeEventListener('deviceorientation', this.onDeviceOrientationCallback_);
   window.removeEventListener('orientationchange', this.onOrientationChangeCallback_);
-  window.removeEventListener('message', this.onMessageCallback_);
+  window.removeEventListener('message'          , this.onMessageCallback_          );
 };
-export default FusionPoseSensor;
+export {FusionPoseSensor};

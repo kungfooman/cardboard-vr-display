@@ -163,4 +163,4 @@ function DeviceParams(params) {
   this.ydpi = params.ydpi;
   this.bevelMm = params.bevelMm;
 }
-export default Dpdb;
+export {Dpdb};

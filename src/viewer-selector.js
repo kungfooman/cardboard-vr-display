@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import DeviceInfo from './device-info.js';
+import {DeviceInfo} from './device-info.js';
 import * as Util from './util.js';
 const DEFAULT_VIEWER = 'CardboardV1';
 const VIEWER_KEY = 'WEBVR_CARDBOARD_VIEWER';
@@ -126,9 +126,13 @@ ViewerSelector.prototype.createDialog_ = function(options) {
   container.appendChild(dialog);
   return container;
 };
+/**
+ * @param {string} name 
+ * @returns {HTMLHeadingElement}
+ */
 ViewerSelector.prototype.createH1_ = function(name) {
-  var h1 = document.createElement('h1');
-  var s = h1.style;
+  const h1 = document.createElement('h1');
+  const s = h1.style;
   s.color = 'black';
   s.fontSize = '20px';
   s.fontWeight = 'bold';
@@ -144,16 +148,16 @@ ViewerSelector.prototype.createChoice_ = function(id, name) {
   <label for="v1">Cardboard V1</label>
   </div>
   */
-  var div = document.createElement('div');
+  const div = document.createElement('div');
   div.style.marginTop = '8px';
   div.style.color = 'black';
-  var input = document.createElement('input');
+  const input = document.createElement('input');
   input.style.fontSize = '30px';
   input.setAttribute('id', id);
   input.setAttribute('type', 'radio');
   input.setAttribute('value', id);
   input.setAttribute('name', 'field');
-  var label = document.createElement('label');
+  const label = document.createElement('label');
   label.style.marginLeft = '4px';
   label.setAttribute('for', id);
   label.innerHTML = name;
@@ -161,10 +165,15 @@ ViewerSelector.prototype.createChoice_ = function(id, name) {
   div.appendChild(label);
   return div;
 };
+/**
+ * @param {string} label 
+ * @param {function} onclick 
+ * @returns {HTMLButtonElement}
+ */
 ViewerSelector.prototype.createButton_ = function(label, onclick) {
-  var button = document.createElement('button');
+  const button = document.createElement('button');
   button.innerHTML = label;
-  var s = button.style;
+  const s = button.style;
   s.float = 'right';
   s.textTransform = 'uppercase';
   s.color = '#1094f7';
@@ -176,4 +185,4 @@ ViewerSelector.prototype.createButton_ = function(label, onclick) {
   button.addEventListener('click', onclick);
   return button;
 };
-export default ViewerSelector;
+export {ViewerSelector};

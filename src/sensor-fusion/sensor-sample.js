@@ -12,6 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ * 
+ * @param {MathUtil.Vector3} sample 
+ * @param {number} timestampS 
+ */
 function SensorSample(sample, timestampS) {
   this.set(sample, timestampS);
 };
@@ -22,4 +27,4 @@ SensorSample.prototype.set = function(sample, timestampS) {
 SensorSample.prototype.copy = function(sensorSample) {
   this.set(sensorSample.sample, sensorSample.timestampS);
 };
-export default SensorSample;
+export {SensorSample};

@@ -12,9 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Distortion from './distortion.js';
-import { radToDeg, degToRad } from './math-util.js';
+import {Distortion} from './distortion.js';
+import {radToDeg, degToRad} from './math-util.js';
 import * as Util from './util.js';
+/**
+ * @typedef {object} DeviceParams
+ * @property {number} [width]
+ * @property {number} [height]
+ * @property {number} widthMeters
+ * @property {number} heightMeters
+ * @property {number} bevelMeters
+ */
+/**
+ * @param {DeviceParams} params 
+ */
 function Device(params) {
   this.width = params.width || Util.getScreenWidth();
   this.height = params.height || Util.getScreenHeight();
@@ -70,6 +81,8 @@ var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
  * deviceParams indicates the parameters of the device to use (generally
  * obtained from dpdb.getDeviceParams()). Can be null to mean no device
  * params were found.
+ * @param {DeviceParams} deviceParams
+ * @param {CardboardViewerParams[]} additionalViewers
  */
 function DeviceInfo(deviceParams, additionalViewers) {
   this.viewer = Viewers.CardboardV2;
@@ -301,6 +314,20 @@ DeviceInfo.prototype.getUndistortedParams_ = function() {
     eyePosY: eyePosY
   };
 };
+/**
+ * @typedef {object} CardboardViewerParams
+ * @property {number} id
+ * @property {string} label
+ * @property {number} fov
+ * @property {number} interLensDistance
+ * @property {number} baselineLensDistance
+ * @property {number} screenLensDistance
+ * @property {number[]} distortionCoefficients
+ * @property {number[]} inverseCoefficients
+ */
+/**
+ * @param {CardboardViewerParams} params 
+ */
 function CardboardViewer(params) {
   // A machine readable ID.
   this.id = params.id;
@@ -322,4 +349,4 @@ function CardboardViewer(params) {
 }
 // Export viewer information.
 DeviceInfo.Viewers = Viewers;
-export default DeviceInfo;
+export {DeviceInfo};

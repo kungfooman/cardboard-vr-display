@@ -35,6 +35,12 @@ function PosePredictor(predictionTimeS, isDebug) {
   // The output quaternion.
   this.outQ = new MathUtil.Quaternion();
 }
+/**
+ * @param {MathUtil.Quaternion} currentQ 
+ * @param {MathUtil.Vector3} gyro 
+ * @param {number} timestampS 
+ * @returns {MathUtil.Quaternion}
+ */
 PosePredictor.prototype.getPrediction = function(currentQ, gyro, timestampS) {
   if (!this.previousTimestampS) {
     this.previousQ.copy(currentQ);
@@ -66,4 +72,4 @@ PosePredictor.prototype.getPrediction = function(currentQ, gyro, timestampS) {
   this.previousTimestampS = timestampS;
   return this.outQ;
 };
-export default PosePredictor;
+export {PosePredictor};

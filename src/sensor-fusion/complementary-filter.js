@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import SensorSample from './sensor-sample.js';
+import {SensorSample} from './sensor-sample.js';
 import * as MathUtil from '../math-util.js';
 import * as Util from '../util.js';
 /**
@@ -58,6 +58,10 @@ function ComplementaryFilter(kFilter, isDebug) {
 ComplementaryFilter.prototype.addAccelMeasurement = function(vector, timestampS) {
   this.currentAccelMeasurement.set(vector, timestampS);
 };
+/**
+ * @param {MathUtil.Vector3} vector 
+ * @param {number} timestampS 
+ */
 ComplementaryFilter.prototype.addGyroMeasurement = function(vector, timestampS) {
   this.currentGyroMeasurement.set(vector, timestampS);
   var deltaT = timestampS - this.previousGyroMeasurement.timestampS;
@@ -118,22 +122,31 @@ ComplementaryFilter.prototype.run_ = function() {
 ComplementaryFilter.prototype.getOrientation = function() {
   return this.filterQ;
 };
+/**
+ * @param {MathUtil.Vector3} accel 
+ * @returns {MathUtil.Quaternion}
+ */
 ComplementaryFilter.prototype.accelToQuaternion_ = function(accel) {
-  var normAccel = new MathUtil.Vector3();
+  const normAccel = new MathUtil.Vector3();
   normAccel.copy(accel);
   normAccel.normalize();
-  var quat = new MathUtil.Quaternion();
+  const quat = new MathUtil.Quaternion();
   quat.setFromUnitVectors(new MathUtil.Vector3(0, 0, -1), normAccel);
   quat.inverse();
   return quat;
 };
+/**
+ * @param {MathUtil.Vector3} gyro 
+ * @param {number} dt 
+ * @returns {MathUtil.Quaternion}
+ */
 ComplementaryFilter.prototype.gyroToQuaternionDelta_ = function(gyro, dt) {
   // Extract axis and angle from the gyroscope data.
-  var quat = new MathUtil.Quaternion();
-  var axis = new MathUtil.Vector3();
+  const quat = new MathUtil.Quaternion();
+  const axis = new MathUtil.Vector3();
   axis.copy(gyro);
   axis.normalize();
   quat.setFromAxisAngle(axis, gyro.length() * dt);
   return quat;
 };
-export default ComplementaryFilter;
+export {ComplementaryFilter};
